@@ -5,7 +5,11 @@ import json
 
 
 # TODO: switch font renders to other data structure
-# TODO: nie ma jeszcze że jak są dwa te same to sie dodają a jak no i dalej to wszystko nie działa a nie mam już siły
+# TODO: animacje przesuwania klocków
+# TODO: punkty
+# TODO: Przyciski
+# Todo: Reset gry
+# TODO: poprawić wyświetlanie się punktów na tilesach
 
 class Game:
     def __init__(self):
@@ -17,6 +21,7 @@ class Game:
         self.file.close()
         # Order does not care
         self.running = True
+        self.gameEnd = False
         self.fps = self.save["fps"]
         self.points = 0
         self.centerText = lambda x, y: x - (y * 9)
@@ -35,6 +40,7 @@ class Game:
         self.scoreRender = self.font24.render("SCORE", True, (255, 255, 255))
         self.scoreRenderNumber = self.renderPoints(self.points)
         self.highScoreRenderNumber = self.renderPoints(self.save["points"]["5x5"])
+        self.gameEndRender = self.font70.render("Game over!!!", True, (116, 0, 255))
         # Load icons
         self.resetIcon = pygame.image.load("reset.png")
         self.backIcon = pygame.image.load("back.png")
@@ -75,6 +81,9 @@ class Game:
                 if not self.tiles[i][j] is None:
                     self.tiles[i][j].draw()
 
+        if self.gameEnd:
+            pass
+
         pygame.display.update()
 
     def renderPoints(self, x):
@@ -85,11 +94,16 @@ class Game:
             self.generateTile()
 
     def generateTile(self):
-        while True:
-            i = [random.randint(0, 4), random.randint(0, 4)]
-            if self.tiles[i[0]][i[1]] is None:
-                break
-        self.tiles[i[0]][i[1]] = tile.Tile(self.screen, i)
+        free_Space = []
+        for i in range(5):
+            for j in range(5):
+                if self.tiles[i][j] is None:
+                    free_Space.append((i, j))
+        if len(free_Space) == 0:
+            self.gameEnd = True
+        else:
+            K = free_Space[random.randint(0, len(free_Space)-1)]
+            self.tiles[K[0]][K[1]] = tile.Tile(self.screen, K)
 
     def returnRange(self):
         if self.moveDirection == "l" or self.moveDirection == "u":
